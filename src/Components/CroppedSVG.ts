@@ -51,13 +51,22 @@ class CroppedSVG {
 
     const result = [svg].reduce(flatten, []).filter((elem: SVGElement) => {
       const parentElement = elem.parentElement as HTMLElement;
+
+      const parentsTags: string[] = [];
+      let currentElement: HTMLElement | SVGElement = elem;
+
+      while (currentElement.parentElement && currentElement.parentElement.tagName) {
+        parentsTags.push(currentElement.parentElement.tagName);
+        currentElement = currentElement.parentElement;
+      }
+
       return (
         elem.tagName &&
         !invisibleElems.includes(elem.tagName) &&
         (elem.getBoundingClientRect().width ||
           elem.getBoundingClientRect().height) &&
         !parentElement.hasAttribute('mask') &&
-        parentElement.tagName !== 'defs' &&
+        parentsTags.indexOf('defs') === -1 &&
         (getComputedStyle(elem).stroke !== 'none' ||
           getComputedStyle(elem).fill !== 'none')
       );
