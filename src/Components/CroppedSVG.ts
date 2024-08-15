@@ -18,7 +18,12 @@ interface Coords {
 class CroppedSVG {
   coords: Coords;
 
-  constructor(public svg: SVGElement, public filename: string, public width?: number, public height?: number) {
+  constructor(
+    public svg: SVGElement,
+    public filename: string,
+    public width?: number,
+    public height?: number
+  ) {
     this.width = width;
     this.height = height;
     this.filename = filename;
@@ -52,11 +57,15 @@ class CroppedSVG {
     const result = [svg].reduce(flatten, []).filter((elem: SVGElement) => {
       const parentElement = elem.parentElement as HTMLElement;
 
-      const parentsTags: string[] = [];
+      let hasDefParent = false;
       let currentElement: HTMLElement | SVGElement = elem;
 
-      while (currentElement.parentElement && currentElement.parentElement.tagName) {
-        parentsTags.push(currentElement.parentElement.tagName);
+      while (currentElement.parentElement) {
+        if (currentElement.parentElement.tagName === 'defs') {
+          hasDefParent = true;
+          break;
+        }
+
         currentElement = currentElement.parentElement;
       }
 
@@ -66,7 +75,7 @@ class CroppedSVG {
         (elem.getBoundingClientRect().width ||
           elem.getBoundingClientRect().height) &&
         !parentElement.hasAttribute('mask') &&
-        parentsTags.indexOf('defs') === -1 &&
+        !hasDefParent &&
         (getComputedStyle(elem).stroke !== 'none' ||
           getComputedStyle(elem).fill !== 'none')
       );
@@ -141,7 +150,9 @@ class CroppedSVG {
     enhanceBtn.classList.add('EnhanceButton');
     enhanceBtn.addEventListener('click', handleImageEnhance);
     enhanceBtn.appendChild(this.svg);
-    const previewSectionElem = document.querySelector('.PreviewSection') as HTMLElement;
+    const previewSectionElem = document.querySelector(
+      '.PreviewSection'
+    ) as HTMLElement;
     previewSectionElem.appendChild(enhanceBtn);
   }
 
